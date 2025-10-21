@@ -1,7 +1,8 @@
 fastapi
-uvicorn
+uvicorn[standard]
+gunicorn
 psycopg2-binary
 bcrypt
-pyjwt
+PyJWT
 python-dotenv
 pydantic[email]
