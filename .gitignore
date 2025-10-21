@@ -1,0 +1,15 @@
+# Environment & secrets
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+
+# Local logs
+logs/
+*.log
+
+# Virtual environments
+venv/
+.env/
