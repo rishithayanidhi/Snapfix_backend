@@ -10,6 +10,10 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+if os.getenv("RENDER") == "true":
+    print("⚠️ Skipping database setup on Render (managed PostgreSQL).")
+    sys.exit(0)
+
 
 async def setup_database():
     """Setup PostgreSQL database and user"""

@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: snapfix-backend
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "bash -c 'python init_categories.py && gunicorn -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:$PORT --workers 4 --timeout 120'"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: snapfix-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRATION_MINUTES
+        value: "30"
+      - key: DEBUG
+        value: "false"
+      - key: APP_NAME
+        value: "SnapFix Authentication API"
+      - key: APP_VERSION
+        value: "1.0.0"
+
+databases:
+  - name: snapfix-db
+    plan: free

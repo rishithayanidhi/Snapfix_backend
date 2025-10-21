@@ -1,15 +1,37 @@
-# Environment & secrets
+# --- ENVIRONMENT FILES ---
 .env
+*.env
+
+# --- PYTHON CACHE / BYTECODE ---
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.db
 
-# Local logs
+# --- LOGS ---
 logs/
 *.log
 
-# Virtual environments
+# --- VIRTUAL ENVIRONMENTS ---
 venv/
 .env/
+.env.bak/
+.venv/
+
+# --- DATABASES / MIGRATIONS ---
+*.db
+*.sqlite3
+migrations/
+
+# --- SYSTEM FILES ---
+.DS_Store
+Thumbs.db
+
+# --- LOCAL SCRIPTS (not needed on Render) ---
+setup_db.py
+find_my_ip.ps1
+
+# --- FRONTEND BUILD FILES (if inside same repo) ---
+build/
+dist/
+node_modules/

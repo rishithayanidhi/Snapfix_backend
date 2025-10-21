@@ -79,6 +79,13 @@ def init_sample_categories():
         Database.connect()
         connection = Database.get_connection()
         cursor = connection.cursor()
+        cursor.execute("SELECT COUNT(*) FROM categories;")
+        count = cursor.fetchone()[0]
+        Database.return_connection(connection)
+
+        if count > 0:
+            logger.info("✅ Categories already exist. Skipping initialization.")
+            sys.exit(0)
         
         logger.info("Initializing sample categories...")
         
