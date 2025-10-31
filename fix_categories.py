@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Initialize sample categories for the Smart Complaint System
+Fix categories with corrupted emoji icons
 """
 
 import logging
@@ -17,8 +17,8 @@ from db import Database
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def init_sample_categories():
-    """Initialize sample categories"""
+def fix_categories():
+    """Fix categories with proper Material Icons"""
     
     categories = [
         {'name': 'Infrastructure', 'description': 'Roads, bridges, public buildings, utilities', 'icon': 'engineering', 'color': '#FF6B35'},
@@ -39,39 +39,27 @@ def init_sample_categories():
         connection = Database.get_connection()
         cursor = connection.cursor()
 
-        # Check if categories exist
-        cursor.execute("SELECT COUNT(*) FROM categories;")
-        count = cursor.fetchone()[0]
-
-        if count > 0:
-            logger.info("✅ Categories already exist. Skipping initialization.")
-            return True  # graceful skip
-
-        logger.info("Initializing sample categories...")
+        logger.info("Fixing categories with proper Material Icons...")
 
         for category in categories:
             cursor.execute('''
-                INSERT INTO categories (name, description, icon_name, color_code, is_active)
-                VALUES (%s, %s, %s, %s, TRUE)
-                ON CONFLICT (name) DO UPDATE SET
-                    description = EXCLUDED.description,
-                    icon_name = EXCLUDED.icon_name,
-                    color_code = EXCLUDED.color_code,
-                    updated_at = CURRENT_TIMESTAMP
+                UPDATE categories 
+                SET icon_name = %s, color_code = %s, description = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE name = %s
             ''', (
-                category['name'],
-                category['description'],
                 category['icon'],
-                category['color']
+                category['color'],
+                category['description'],
+                category['name']
             ))
-            logger.info(f"✅ Added/Updated category: {category['name']}")
+            logger.info(f"✅ Fixed category: {category['name']}")
 
         connection.commit()
-        logger.info("🎉 Sample categories initialized successfully!")
+        logger.info("🎉 Categories fixed successfully!")
         return True
 
     except Exception as e:
-        logger.error(f"❌ Failed to initialize categories: {e}")
+        logger.error(f"❌ Failed to fix categories: {e}")
         return False
 
     finally:
@@ -84,12 +72,11 @@ def init_sample_categories():
             pass
         Database.disconnect()
 
-
 if __name__ == "__main__":
-    logger.info("🚀 Starting category initialization...")
-    success = init_sample_categories()
+    logger.info("🔧 Starting category fix...")
+    success = fix_categories()
 
     if success:
-        logger.info("✅ Category initialization completed successfully!")
+        logger.info("✅ Category fix completed successfully!")
     else:
-        logger.error("❌ Category initialization failed!")
+        logger.error("❌ Category fix failed!")
