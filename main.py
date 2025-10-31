@@ -95,14 +95,26 @@ async def lifespan(app: FastAPI):
         Database.connect()
         logger.info("✅ Database connected successfully")
         
-        # Create admin user if not exists
+        # Create admin user if not exists (handle race condition for multiple workers)
         try:
             existing_admin = UserService.get_user_by_email(ADMIN_EMAIL)
             if not existing_admin:
-                UserService.create_user("Admin User", ADMIN_EMAIL, ADMIN_PASSWORD)
-                logger.info(f"✅ Admin user created: {ADMIN_EMAIL}")
+                try:
+                    UserService.create_user("Admin User", ADMIN_EMAIL, ADMIN_PASSWORD)
+                    logger.info(f"✅ Admin user created: {ADMIN_EMAIL}")
+                except ValueError as ve:
+                    if "Email already registered" in str(ve):
+                        logger.info(f"ℹ️ Admin user already exists: {ADMIN_EMAIL}")
+                    else:
+                        raise ve
+            else:
+                logger.info(f"ℹ️ Admin user already exists: {ADMIN_EMAIL}")
         except Exception as e:
-            logger.warning(f"⚠️ Admin user creation failed: {e}")
+            # Handle database constraint errors gracefully (race condition between workers)
+            if "duplicate key value violates unique constraint" in str(e):
+                logger.info(f"ℹ️ Admin user already exists (race condition): {ADMIN_EMAIL}")
+            else:
+                logger.warning(f"⚠️ Admin user creation failed: {e}")
             
     except Exception as e:
         logger.exception("❌ Startup failed")
