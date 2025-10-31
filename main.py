@@ -346,6 +346,36 @@ def health_check(request: Request):
         "environment": ENVIRONMENT
     }
 
+@app.get("/debug/categories", tags=["System"])
+@rate_limit("10/minute") 
+def debug_categories(request: Request):
+    """Debug endpoint to check raw categories from database"""
+    try:
+        from db import Database
+        connection = Database.get_connection()
+        cursor = connection.cursor()
+        cursor.execute("SELECT COUNT(*) FROM categories WHERE is_active = TRUE")
+        count = cursor.fetchone()[0]
+        cursor.execute("SELECT name, description, icon_name, color_code FROM categories WHERE is_active = TRUE")
+        raw_categories = cursor.fetchall()
+        cursor.close()
+        Database.return_connection(connection)
+        
+        return {
+            "total_categories": count,
+            "categories": [
+                {
+                    "name": cat[0],
+                    "description": cat[1], 
+                    "icon": cat[2],
+                    "color": cat[3]
+                } for cat in raw_categories
+            ]
+        }
+    except Exception as e:
+        logger.error(f"Debug categories error: {e}", exc_info=True)
+        return {"error": str(e)}
+
 @app.get("/", tags=["System"])
 def root():
     """API root endpoint with available routes"""
@@ -455,11 +485,18 @@ def admin_login(request: Request, admin_data: AdminLoginRequest):
 def get_categories(request: Request):
     """Get all available complaint categories"""
     try:
+        logger.info("Fetching categories from database...")
         categories = CategoryService.get_all_categories()
+        logger.info(f"Retrieved {len(categories)} categories from database")
+        
+        # Log the first category for debugging
+        if categories:
+            logger.info(f"Sample category: {categories[0]}")
+        
         return [CategoryResponse(**c) for c in categories]
     except Exception as e:
-        logger.error(f"Get categories error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to retrieve categories")
+        logger.error(f"Get categories error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve categories: {str(e)}")
 
 @app.post("/api/complaints/public", response_model=SimpleComplaintResponse, status_code=201, tags=["Complaints"])
 @rate_limit("10/minute")
