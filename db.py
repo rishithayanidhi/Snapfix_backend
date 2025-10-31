@@ -1326,7 +1326,7 @@ class CategoryService:
         try:
             cursor.execute("""
                 SELECT id, name, description, icon_name as icon, color_code as color, created_at
-                FROM categories WHERE is_active = TRUE ORDER BY display_order, name
+                FROM categories WHERE is_active = TRUE ORDER BY name
             """)
             rows = cursor.fetchall()
             result = []
