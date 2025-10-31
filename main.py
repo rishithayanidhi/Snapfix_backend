@@ -456,9 +456,6 @@ def get_categories(request: Request):
     """Get all available complaint categories"""
     try:
         categories = CategoryService.get_all_categories()
-        for c in categories:
-            if isinstance(c.get("created_at"), datetime):
-                c["created_at"] = c["created_at"].isoformat()
         return [CategoryResponse(**c) for c in categories]
     except Exception as e:
         logger.error(f"Get categories error: {e}")

@@ -1329,7 +1329,17 @@ class CategoryService:
                 FROM categories WHERE is_active = TRUE ORDER BY display_order, name
             """)
             rows = cursor.fetchall()
-            return [dict(r) for r in rows]
+            result = []
+            for r in rows:
+                category_dict = dict(r)
+                # Convert UUID to string
+                if category_dict.get('id'):
+                    category_dict['id'] = str(category_dict['id'])
+                # Convert datetime to string
+                if category_dict.get('created_at') and isinstance(category_dict['created_at'], datetime):
+                    category_dict['created_at'] = category_dict['created_at'].isoformat()
+                result.append(category_dict)
+            return result
         except Exception as e:
             app_error_logger.error(f"APP_ERROR: get_all_categories failed - {str(e)}")
             raise
@@ -1348,7 +1358,16 @@ class CategoryService:
                 FROM categories WHERE name = %s AND is_active = TRUE
             """, (name,))
             row = cursor.fetchone()
-            return dict(row) if row else None
+            if row:
+                category_dict = dict(row)
+                # Convert UUID to string
+                if category_dict.get('id'):
+                    category_dict['id'] = str(category_dict['id'])
+                # Convert datetime to string
+                if category_dict.get('created_at') and isinstance(category_dict['created_at'], datetime):
+                    category_dict['created_at'] = category_dict['created_at'].isoformat()
+                return category_dict
+            return None
         except Exception as e:
             app_error_logger.error(f"APP_ERROR: get_category_by_name failed - {str(e)}")
             raise
