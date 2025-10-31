@@ -2,9 +2,9 @@ services:
   - type: web
     name: snapfix-backend
     env: python
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "bash -c 'python init_categories.py && gunicorn -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:$PORT --workers 4 --timeout 120'"
+    plan: starter
+    buildCommand: "pip install -r requirements_prod.txt --no-cache-dir"
+    startCommand: "bash -c 'python init_categories.py && gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 30 --keep-alive 2 --max-requests 1000 --max-requests-jitter 100 --access-logfile - --error-logfile -'"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -15,13 +15,43 @@ services:
       - key: JWT_ALGORITHM
         value: HS256
       - key: JWT_EXPIRATION_MINUTES
-        value: "30"
+        value: "120"
       - key: DEBUG
         value: "false"
+      - key: ENVIRONMENT
+        value: "production"
       - key: APP_NAME
-        value: "SnapFix Authentication API"
+        value: "SnapFix Backend API"
       - key: APP_VERSION
         value: "1.0.0"
+      - key: ALLOW_ORIGINS
+        value: "https://your-frontend-domain.com,https://snapfix-frontend.render.com"
+      - key: MAX_FILE_SIZE
+        value: "10485760"
+      - key: ALLOWED_FILE_TYPES
+        value: "image/jpeg,image/png,image/gif,image/webp,application/pdf"
+      - key: UPLOAD_PATH
+        value: "uploads"
+      - key: RATE_LIMIT_REQUESTS
+        value: "100"
+      - key: RATE_LIMIT_WINDOW
+        value: "60"
+      - key: ADMIN_EMAIL
+        value: "admin@snapfix.com"
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: SUPER_ADMIN_KEY
+        generateValue: true
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: ENABLE_SECURITY_HEADERS
+        value: "true"
+      - key: FORCE_HTTPS
+        value: "true"
+      - key: HOST
+        value: "0.0.0.0"
+      - key: WORKERS
+        value: "2"
 
 databases:
   - name: snapfix-db
